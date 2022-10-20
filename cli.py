@@ -1,3 +1,8 @@
+"""
+cli.py, Command line interface for PDM Tools Database
+Author: Gian Esteves
+"""
+
 from tools import *
 
 def main():
@@ -17,7 +22,7 @@ def print_signin():
         case 1:
             print_login()
         case 2:
-            print("cum 2")
+            print_createacc()
         case 3:
             print("Exiting...")
             exit()
@@ -34,7 +39,7 @@ def print_login():
 
     # gets an array of tuples
     users = [r[0] for r in cur.fetchall()]
-    print(users)
+    #print(users)
 
     if username not in users:
         print("Could not find user")
@@ -55,8 +60,48 @@ def print_login():
     # close cursor
     cur.close()
 
-def print_creatacc():
-    print("test")
+def print_createacc():
+    print("----------------------------------------")
+    # Multiple accounts under same email allowed
+    email = input("Email: ")
+    # Make sure that username is unique
+    username = input("Username: ")
+
+    cur = con.cursor()
+    cur.execute("SELECT username FROM users")
+
+    # gets an array of tuples
+    users = [r[0] for r in cur.fetchall()]
+    #print(users)
+
+    if username in users:
+        print("Username already exists.")
+        print_createacc()
+
+    password = input("Password: ")
+    firstname = input("First name: ")
+    lastname = input("Last name: ")
+
+    print("Creating account...")
+
+    # get current uid
+    cur.execute("select uid from users")
+    uids = [r[0] for r in cur.fetchall()]
+    uid = uids[-1] + 1
+
+    # add user
+    d = date.today()
+    dt = datetime.now()
+    SQL = "INSERT INTO users VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    data = (uid, email, username, password, firstname, lastname, d, dt)
+    cur.execute(SQL, data)
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print("Added to database.")
+    print_signin()
 
 
 if __name__ == "__main__":
