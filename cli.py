@@ -169,9 +169,13 @@ def print_addcategory():
     result = cur.fetchone()
     rowcount = result[0]
 
+    # Insert into category list table
     SQL = "INSERT INTO categories VALUES (%s, %s, %s)"
     data = (categoryname, rowcount, curruser)
     cur.execute(SQL, data)
+
+    # Create new category itself
+    
 
     print("Created {} category.".format(categoryname))
 
