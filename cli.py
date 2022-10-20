@@ -21,7 +21,7 @@ def print_signin():
     val = input("Select: ")
     match int(val):
         case 1:
-            curruser = print_login()
+            print_login()
         case 2:
             print_createacc()
         case 3:
@@ -71,7 +71,10 @@ def print_login():
     cur.close()
 
     # return uid
-    return uid
+    global curruser 
+    curruser = uid
+
+    print_mainmenu()
 
 def print_createacc():
     print("----------------------------------------")
@@ -97,10 +100,11 @@ def print_createacc():
 
     print("Creating account...")
 
-    # get current uid
-    cur.execute("SELECT uid FROM users")
-    uids = [r[0] for r in cur.fetchall()]
-    uid = uids[-1] + 1
+    # Get number of rows for uid
+    SQL = "SELECT COUNT(*) FROM users"
+    cur.execute(SQL)
+    result = cur.fetchone()
+    uid = result[0]
 
     # add user
     d = date.today()
@@ -132,6 +136,54 @@ def create_catalogue(uid, username):
 def print_mainmenu():
     print("----------------------------------------")
     print("1. Status")
+    print("2. Add tool")
+    print("3. Edit tool")
+    print("4. Delete tool")
+    print("5. Add category")
+    print("6. Search for tool")
+    print("9. Exit")
+
+    val = input("Select: ")
+    match int(val):
+        case 1:
+            return
+        case 2:
+            print_addtool()
+        case 5:
+            print_addcategory()
+        case 9:
+            print("Exiting...")
+            exit()
+        case default:
+            print_mainmenu()
+
+def print_addcategory():
+    print("----------------------------------------")
+    categoryname = input("Category name: ")
+
+    cur = con.cursor()
+
+    # Get number of rows
+    SQL = "SELECT COUNT(*) FROM categories"
+    cur.execute(SQL)
+    result = cur.fetchone()
+    rowcount = result[0]
+
+    SQL = "INSERT INTO categories VALUES (%s, %s, %s)"
+    data = (categoryname, rowcount, curruser)
+    cur.execute(SQL, data)
+
+    print("Created {} category.".format(categoryname))
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
+
+def print_addtool():
+    print("----------------------------------------")
+
 
 if __name__ == "__main__":
     main()
