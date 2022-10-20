@@ -37,14 +37,14 @@ def sshtunnel():
     print("Database connected")
     return con
 
-def exit():
-    # save changes
-    con.commit()
-
+#def exit():
+#    # save changes
+#    con.commit()
+#
     # close the cursor
-    cur.close()
-
+#    cur.close()
+#
     # close the connection
-    con.close()
+#    con.close()
 
-    print("Exited.")
+#    print("Exited.")

@@ -189,5 +189,14 @@ def print_addtool():
     print("----------------------------------------")
 
 
+def exit():
+    # save changes
+    con.commit()
+
+    # close the connection
+    con.close()
+
+    print("Exited.")
+
 if __name__ == "__main__":
     main()
