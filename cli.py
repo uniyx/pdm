@@ -8,6 +8,7 @@ from tools import *
 def main():
     global con
     con = sshtunnel()
+    global curruser
     print_signin()
 
 def print_signin():
@@ -20,7 +21,7 @@ def print_signin():
     val = input("Select: ")
     match int(val):
         case 1:
-            print_login()
+            curruser = print_login()
         case 2:
             print_createacc()
         case 3:
@@ -47,18 +48,22 @@ def print_login():
 
     # Proceed if user exists
     password = input("Password: ")
-    SQL = "SELECT password FROM users WHERE username = %s"
+    SQL = "SELECT password, uid FROM users WHERE username = %s"
     data = (username,)
     cur.execute(SQL, data)
-    realpassword = [r[0] for r in cur.fetchall()][0]
+    results = cur.fetchall()
 
-    print(realpassword)
+    realpassword = [r[0] for r in results][0]
+    uid = [r[1] for r in results][0]
 
     if password == realpassword:
-        print("Successfully logged in as {}.".format(username))
+        print("Successfully logged in as {} ({}).".format(username, uid))
 
     # close cursor
     cur.close()
+
+    # return uid
+    return uid
 
 def print_createacc():
     print("----------------------------------------")
@@ -85,7 +90,7 @@ def print_createacc():
     print("Creating account...")
 
     # get current uid
-    cur.execute("select uid from users")
+    cur.execute("SELECT uid FROM users")
     uids = [r[0] for r in cur.fetchall()]
     uid = uids[-1] + 1
 
@@ -96,13 +101,29 @@ def print_createacc():
     data = (uid, email, username, password, firstname, lastname, d, dt)
     cur.execute(SQL, data)
 
+    # create user's catalogue
+    create_catalogue(uid, username)
+
     # save changes
     con.commit()
     cur.close()
 
-    print("Added to database.")
+    print("{} added to the database.".format(username))
     print_signin()
 
+def create_catalogue(uid, username):
+    print("Creating {}'s catalogue...".format(username))
+
+    cur = con.cursor()
+
+    # Make cid same as uid
+    SQL = "INSERT INTO catalogue VALUES (%s, %s)"
+    data = (uid, uid)
+    cur.execute(SQL, data)
+
+def print_mainmenu():
+    print("----------------------------------------")
+    print("1. Status")
 
 if __name__ == "__main__":
     main()
