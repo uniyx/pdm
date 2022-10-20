@@ -48,18 +48,26 @@ def print_login():
 
     # Proceed if user exists
     password = input("Password: ")
-    SQL = "SELECT password, uid FROM users WHERE username = %s"
+    SQL = "SELECT password, uid, lastaccess FROM users WHERE username = %s"
     data = (username,)
     cur.execute(SQL, data)
     results = cur.fetchall()
 
     realpassword = [r[0] for r in results][0]
     uid = [r[1] for r in results][0]
+    #lastaccess = [r[2] for r in results][0]
 
     if password == realpassword:
         print("Successfully logged in as {} ({}).".format(username, uid))
 
+    # record access time
+    lastaccess = datetime.now()
+    SQL = "UPDATE users SET lastaccess = %s WHERE uid = %s"
+    data = (lastaccess, uid)
+    cur.execute(SQL, data)
+
     # close cursor
+    con.commit()
     cur.close()
 
     # return uid
