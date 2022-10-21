@@ -245,6 +245,11 @@ def print_addtool():
         data = (catid, barcode)
         cur.execute(SQL, data)
 
+    # Update catalogue_tools table
+    SQL = "INSERT INTO catalogue_tools VALUES (%s, %s)"
+    data = (curruser, barcode)
+    cur.execute(SQL,data)
+
     print("Created {} tool.".format(name))
 
     # save changes
@@ -252,6 +257,28 @@ def print_addtool():
     cur.close()
 
     print_mainmenu()
+
+def print_tools():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    # Select all user's tools
+    SQL = "SELECT * FROM catalogue_tools WHERE clogid = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    results = cur.fetchall()
+    print(results)
+
+    catid = [r[0] for r in results]
+    categoryname = [r[1] for r in results]
+
+    for x, y in zip(catid, categoryname):
+        print(x, y)
+
+    print("----------------------------------------")
+
+    cur.close()
 
 def exit():
     # save changes
