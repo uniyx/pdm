@@ -213,18 +213,37 @@ def print_categories():
 
 def print_addtool():
     print("----------------------------------------")
+    cur = con.cursor()
+
+    # Get number of rows
+    SQL = "SELECT COUNT(*) FROM tools"
+    cur.execute(SQL)
+    result = cur.fetchone()
+    barcode = result[0]
 
     name = input("Name: ")
     description = input("Description: ")
+    purchaseprice = input("Price: ")
     shareable = input("Shareable: ")
-    price = input("Price: ")
 
     print_categories()
 
     print("Choose categories and separate by spaces. Eg: 0 1 2")
     categories = input("Categories: ")
+    purchasedate = datetime.now()
 
     print("Creating tool...")
+    
+    # Insert into tools table
+    SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s)"
+    data = (barcode, name, description, purchaseprice, shareable, purchasedate)
+    cur.execute(SQL, data)
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
 
 def exit():
     # save changes
