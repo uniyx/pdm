@@ -150,7 +150,7 @@ def print_mainmenu():
     val = input("Select: ")
     match int(val):
         case 1:
-            return
+            print_tools()
         case 2:
             print_addtool()
         case 5:
@@ -262,19 +262,23 @@ def print_tools():
     print("----------------------------------------")
     cur = con.cursor()
 
-    # Select all user's tools
-    SQL = "SELECT * FROM catalogue_tools WHERE clogid = %s"
+    # Select all user's tool ids from catalogue_tools table
+    SQL = "SELECT toolid FROM catalogue_tools WHERE clogid = %s"
     data = (curruser,)
     cur.execute(SQL, data)
 
-    results = cur.fetchall()
-    print(results)
+    barcodes = [r[0] for r in cur.fetchall()]
 
-    catid = [r[0] for r in results]
-    categoryname = [r[1] for r in results]
+    # Select all tools from tool table
+    for barcode in barcodes:
+        SQL = "SELECT * FROM tools WHERE barcode = %s"
+        data = (barcode,)
+        cur.execute(SQL, data)
 
-    for x, y in zip(catid, categoryname):
-        print(x, y)
+        tool = [r for r in cur.fetchall()]
+        tool = list(tool[0])
+
+        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Shareable: {}, Date: {}".format(tool[0], tool[1], tool[2], tool[3], tool[4], tool[5]))
 
     print("----------------------------------------")
 
