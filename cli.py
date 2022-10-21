@@ -3,6 +3,7 @@ cli.py, Command line interface for PDM Tools Database
 Author: Gian Esteves
 """
 
+from unicodedata import category
 from tools import *
 
 def main():
@@ -59,6 +60,9 @@ def print_login():
 
     if password == realpassword:
         print("Successfully logged in as {} ({}).".format(username, uid))
+    else:
+        print("Wrong password. Try again.")
+        print_login()
 
     # record access time
     lastaccess = datetime.now()
@@ -185,9 +189,69 @@ def print_addcategory():
 
     print_mainmenu()
 
-def print_addtool():
+def print_categories():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    # Select all user's categories
+    SQL = "SELECT catid, category FROM categories WHERE uid = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    results = cur.fetchall()
+
+    catid = [r[0] for r in results]
+    categoryname = [r[1] for r in results]
+
+    for x, y in zip(catid, categoryname):
+        print(x, y)
+
     print("----------------------------------------")
 
+    cur.close()
+
+
+def print_addtool():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    # Get number of rows
+    SQL = "SELECT COUNT(*) FROM tools"
+    cur.execute(SQL)
+    result = cur.fetchone()
+    barcode = result[0]
+
+    name = input("Name: ")
+    description = input("Description: ")
+    purchaseprice = input("Price: ")
+    shareable = input("Shareable: ")
+
+    print_categories()
+
+    print("Choose categories and separate by spaces. Eg: 0 1 2")
+    categories = input("Categories: ")
+    purchasedate = datetime.now()
+    
+    # Insert into tools table
+    SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s)"
+    data = (barcode, name, description, purchaseprice, shareable, purchasedate)
+    cur.execute(SQL, data)
+
+    # Update tool_categories table
+    catlist = categories.split()
+
+    for catid in catlist:
+        SQL = "INSERT INTO tool_categories VALUES (%s, %s)"
+        data = (catid, barcode)
+        cur.execute(SQL, data)
+
+    print("Created {} tool.".format(name))
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
 
 def exit():
     # save changes
