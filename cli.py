@@ -231,13 +231,21 @@ def print_addtool():
     print("Choose categories and separate by spaces. Eg: 0 1 2")
     categories = input("Categories: ")
     purchasedate = datetime.now()
-
-    print("Creating tool...")
     
     # Insert into tools table
     SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s)"
     data = (barcode, name, description, purchaseprice, shareable, purchasedate)
     cur.execute(SQL, data)
+
+    # Update tool_categories table
+    catlist = categories.split()
+
+    for catid in catlist:
+        SQL = "INSERT INTO tool_categories VALUES (%s, %s)"
+        data = (catid, barcode)
+        cur.execute(SQL, data)
+
+    print("Created {} tool.".format(name))
 
     # save changes
     con.commit()
