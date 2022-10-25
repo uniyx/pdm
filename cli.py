@@ -310,11 +310,16 @@ def print_catalogue():
         data = (barcode,)
         cur.execute(SQL, data)
 
-        owners = [r for r in cur.fetchall()]
-        print(owners)
+        owner = [r for r in cur.fetchall()][0][0]
 
-        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Shareable: {}, Date: {}, Shared: {}".format(tool[0],
-                            tool[1], tool[2], tool[3], tool[4], tool[5], tool[6]))
+        SQL = "SELECT username FROM users WHERE uid = %s"
+        data = (owner,)
+        cur.execute(SQL, data)
+
+        owner = [r for r in cur.fetchall()][0][0]
+
+        print("Owner: {} Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(tool[0], owner,
+                            tool[1], tool[2], tool[3], tool[5]))
 
     cur.close()
 
