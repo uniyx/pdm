@@ -1,15 +1,6 @@
 import psycopg2
 
 
-# cur = con.cursor()
-# cur.execute("select id, name from employees")
-# rows = cur.fetchall()
-# for r in rows:
-#   print("id {r[0]} name {r[1]}")
-# cur.execute("insert into employees (id, name) values (%s, %s)", (id1, name1)
-# con.commit()
-# cur.close()
-# con.close()
 def print_request(connection, UID):
     con = connection
     print("1 if you wish to make a request/n2 if you wish to complete an existing request")
@@ -18,15 +9,16 @@ def print_request(connection, UID):
         barcode = input("Please enter the barcode of the item you want to borrow")
         datereq = input("please input the date you require the tool by")
         returndate = input("please input the date you will return the tool by")
-        #needs catalogue to operate
-        #cur = con.cursor()
-        #cur.execute("select uid from catalogue where barcode = %s ", barcode)
+        # needs catalogue to operate
+        # cur = con.cursor()
+        # cur.execute("select uid from catalogue where barcode = %s ", barcode)
         make_request(con, UID, "temp", barcode, datereq, returndate)
         con.close()
     else:
         barcode = input("please enter the barcode of the item you wish to return")
         request_completed(con, "temp", "temp", barcode)
         con.close()
+
 
 def make_request(con, requester, requestee, barcode, daterequired, returnbydate):
     cur = con.cursor()
