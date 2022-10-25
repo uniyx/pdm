@@ -278,7 +278,8 @@ def print_tools():
         tool = [r for r in cur.fetchall()]
         tool = list(tool[0])
 
-        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Shareable: {}, Date: {}".format(tool[0], tool[1], tool[2], tool[3], tool[4], tool[5]))
+        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Shareable: {}, Date: {}, Shared: {}".format(tool[0],
+                            tool[1], tool[2], tool[3], tool[4], tool[5], tool[6]))
 
     print("----------------------------------------")
 
