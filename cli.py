@@ -158,6 +158,8 @@ def print_mainmenu():
             print_addtool()
         case 3:
             print_tooledit()
+        case 4:
+            print_tooldelete()
         case 5:
             print_addcategory()
         case 7:
@@ -386,6 +388,34 @@ def print_tooledit():
 
     print_mainmenu()
 
+def print_tooldelete():
+    print_tools()
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    print("Select a tool to delete")
+    barcode = input("Barcode: ")
+
+    # Delete old categories
+    SQL = "DELETE FROM tool_categories WHERE toolid = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    # Delete from catalogue_tools
+    SQL = "DELETE FROM catalogue_tools WHERE toolid = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    # Delete tool
+    SQL = "DELETE FROM tools WHERE barcode = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
 
 def print_catalogue():
     print("----------------------------------------")
