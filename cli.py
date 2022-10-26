@@ -351,7 +351,24 @@ def print_tooledit():
             data = (newdata, barcode)
             cur.execute(SQL, data)
         case 5:
-            print("categories :(")
+            # Delete old categories
+            SQL = "DELETE FROM tool_categories WHERE toolid = %s"
+            data = (barcode,)
+            cur.execute(SQL, data)
+
+            print_categories()
+
+            print("Choose categories and separate by spaces. Eg: 0 1 2")
+            categories = input("Categories: ")
+
+            # Update tool_categories table
+            catlist = categories.split()
+
+            for catid in catlist:
+                SQL = "INSERT INTO tool_categories VALUES (%s, %s)"
+                data = (catid, barcode)
+                cur.execute(SQL, data)
+            
         case 6:
             newdata = input("New Shareable, 0 or 1: ")
 
