@@ -327,21 +327,37 @@ def print_tooledit():
     val = input("Select attribute to edit: ")
     match int(val):
         case 1:
-            newname = input("New Name: ")
+            newdata = input("New Name: ")
 
             SQL = "UPDATE tools SET name = %s WHERE barcode = %s"
-            data = (newname, barcode)
+            data = (newdata, barcode)
             cur.execute(SQL, data)
         case 2:
-            print_addtool()
+            newdata = input("New Description: ")
+
+            SQL = "UPDATE tools SET description = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
         case 3:
-            print_tooledit()
+            newdata = input("New Purchase Price: ")
+
+            SQL = "UPDATE tools SET purchaseprice = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
         case 4:
-            print("") 
+            newdata = input("New Purchase Date: ")
+
+            SQL = "UPDATE tools SET purchasedate = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
         case 5:
-            print("")
+            print("categories :(")
         case 6:
-            print("")
+            newdata = input("New Shareable, 0 or 1: ")
+
+            SQL = "UPDATE tools SET shareable = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
         case default:
             print_tooledit()
 
