@@ -156,6 +156,8 @@ def print_mainmenu():
             print_mainmenu()
         case 2:
             print_addtool()
+        case 3:
+            print_tooledit()
         case 5:
             print_addcategory()
         case 7:
@@ -285,12 +287,65 @@ def print_tools():
         tool = [r for r in cur.fetchall()]
         tool = list(tool[0])
 
-        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Shareable: {}, Date: {}, Shared: {}".format(tool[0],
-                            tool[1], tool[2], tool[3], tool[4], tool[5], tool[6]))
+        SQL = "SELECT catid FROM tool_categories WHERE toolid = %s"
+        data = (barcode,)
+        cur.execute(SQL, data)
 
-    print("----------------------------------------")
+        categories = [r for r in cur.fetchall()]
+        catnames = []
+
+        for category in categories:
+            catid = int(category[0])
+
+            SQL = "SELECT category FROM categories WHERE catid = %s"
+            data = (catid,)
+            cur.execute(SQL, data)
+
+            catnames.append(cur.fetchall()[0][0])
+
+        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}, Categories: {}, Shareable: {}".format(tool[0],
+                            tool[1], tool[2], tool[3], tool[5], catnames, tool[4]))
 
     cur.close()
+
+def print_tooledit():
+    print_tools()
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    print("Select a tool to edit")
+    barcode = input("Barcode: ")
+
+    print("----------------------------------------")
+    print("1. Name")
+    print("2. Desciption")
+    print("3. Purchase Price")
+    print("4. Purchase Date")
+    print("5. Categories")
+    print("6. Shareable")
+
+    val = input("Select attribute to edit: ")
+    match int(val):
+        case 1:
+            print_tools()
+            print_mainmenu()
+        case 2:
+            print_addtool()
+        case 3:
+            print_tooledit()
+
+    SQL = "SELECT * FROM tools WHERE barcode = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    cur.close()
+        
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
+
 
 def print_catalogue():
     print("----------------------------------------")
