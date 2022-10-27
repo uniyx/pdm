@@ -3,7 +3,6 @@ cli.py, Command line interface for PDM Tools Database
 Author: Gian Esteves
 """
 
-from requests import *
 from tools import *
 
 def main():
@@ -164,6 +163,7 @@ def print_mainmenu():
             print_addcategory()
         case 7:
             print_catalogue()
+            print_mainmenu()
         case 8:
             print_managerequests()
         case 9:
@@ -429,6 +429,14 @@ def print_catalogue():
     cur.execute(SQL, data)
 
     tools = [r for r in cur.fetchall()]
+
+    print(tools)
+
+    if len(tools) == 0:
+        print("No tools available")
+
+        print_mainmenu()
+
     for tool in tools:
 
         barcode = tool[0]
@@ -577,7 +585,7 @@ def print_sentrequests():
 
                 # Change catalogues
                 SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
-                data = (curruser, request[1])
+                data = (request[6], request[1])
                 cur.execute(SQL, data)
 
                 # Update shareable
@@ -755,7 +763,7 @@ def exit():
     # close the connection
     con.close()
 
-    print("Exited.")
+    return 0
 
 if __name__ == "__main__":
     main()
