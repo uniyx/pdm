@@ -156,6 +156,10 @@ def print_mainmenu():
             print_mainmenu()
         case 2:
             print_addtool()
+        case 3:
+            print_tooledit()
+        case 4:
+            print_tooldelete()
         case 5:
             print_addcategory()
         case 7:
@@ -285,12 +289,133 @@ def print_tools():
         tool = [r for r in cur.fetchall()]
         tool = list(tool[0])
 
-        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Shareable: {}, Date: {}, Shared: {}".format(tool[0],
-                            tool[1], tool[2], tool[3], tool[4], tool[5], tool[6]))
+        SQL = "SELECT catid FROM tool_categories WHERE toolid = %s"
+        data = (barcode,)
+        cur.execute(SQL, data)
 
-    print("----------------------------------------")
+        categories = [r for r in cur.fetchall()]
+        catnames = []
+
+        for category in categories:
+            catid = int(category[0])
+
+            SQL = "SELECT category FROM categories WHERE catid = %s"
+            data = (catid,)
+            cur.execute(SQL, data)
+
+            catnames.append(cur.fetchall()[0][0])
+
+        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}, Categories: {}, Shareable: {}".format(tool[0],
+                            tool[1], tool[2], tool[3], tool[5], catnames, tool[4]))
 
     cur.close()
+
+def print_tooledit():
+    print_tools()
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    print("Select a tool to edit")
+    barcode = input("Barcode: ")
+
+    print("----------------------------------------")
+    print("1. Name")
+    print("2. Desciption")
+    print("3. Purchase Price")
+    print("4. Purchase Date")
+    print("5. Categories")
+    print("6. Shareable")
+
+    val = input("Select attribute to edit: ")
+    match int(val):
+        case 1:
+            newdata = input("New Name: ")
+
+            SQL = "UPDATE tools SET name = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
+        case 2:
+            newdata = input("New Description: ")
+
+            SQL = "UPDATE tools SET description = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
+        case 3:
+            newdata = input("New Purchase Price: ")
+
+            SQL = "UPDATE tools SET purchaseprice = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
+        case 4:
+            newdata = input("New Purchase Date: ")
+
+            SQL = "UPDATE tools SET purchasedate = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
+        case 5:
+            # Delete old categories
+            SQL = "DELETE FROM tool_categories WHERE toolid = %s"
+            data = (barcode,)
+            cur.execute(SQL, data)
+
+            print_categories()
+
+            print("Choose categories and separate by spaces. Eg: 0 1 2")
+            categories = input("Categories: ")
+
+            # Update tool_categories table
+            catlist = categories.split()
+
+            for catid in catlist:
+                SQL = "INSERT INTO tool_categories VALUES (%s, %s)"
+                data = (catid, barcode)
+                cur.execute(SQL, data)
+            
+        case 6:
+            newdata = input("New Shareable, 0 or 1: ")
+
+            SQL = "UPDATE tools SET shareable = %s WHERE barcode = %s"
+            data = (newdata, barcode)
+            cur.execute(SQL, data)
+        case default:
+            print_tooledit()
+
+    cur.close()
+        
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
+
+def print_tooldelete():
+    print_tools()
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    print("Select a tool to delete")
+    barcode = input("Barcode: ")
+
+    # Delete old categories
+    SQL = "DELETE FROM tool_categories WHERE toolid = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    # Delete from catalogue_tools
+    SQL = "DELETE FROM catalogue_tools WHERE toolid = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    # Delete tool
+    SQL = "DELETE FROM tools WHERE barcode = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
 
 def print_catalogue():
     print("----------------------------------------")
