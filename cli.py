@@ -152,8 +152,7 @@ def print_mainmenu():
     val = input("Select: ")
     match int(val):
         case 1:
-            print_tools()
-            print_mainmenu()
+            print_status()
         case 2:
             print_addtool()
         case 3:
@@ -244,8 +243,8 @@ def print_addtool():
     purchasedate = datetime.now()
     
     # Insert into tools table
-    SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s)"
-    data = (barcode, name, description, purchaseprice, shareable, purchasedate)
+    SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    data = (barcode, name, description, purchaseprice, shareable, purchasedate, False)
     cur.execute(SQL, data)
 
     # Update tool_categories table
@@ -443,12 +442,35 @@ def print_catalogue():
 
         owner = [r for r in cur.fetchall()][0][0]
 
-        print("Owner: {} Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(tool[0], owner,
+        print("Owner: {}, Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(tool[0], owner,
                             tool[1], tool[2], tool[3], tool[5]))
 
     cur.close()
 
     print_mainmenu()
+
+def print_status():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    SQL = "SELECT * FROM users WHERE uid = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    userdata = cur.fetchall()[0]
+    name = userdata[4] + " " + userdata[5]
+
+    print("UserID: {}, Username: {}, Email: {}, Name: {}, User since: {}".format(userdata[0], userdata[2],
+                                    userdata[1], name, userdata[6]))
+
+    print_tools()
+
+    cur.close()
+
+    print_mainmenu()
+
+def print_request():
+    print("")
 
 def exit():
     # save changes
