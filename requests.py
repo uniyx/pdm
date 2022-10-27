@@ -28,18 +28,18 @@ def print_request(connection, UID):
 
 def make_request(con, requester, requestee, barcode, daterequired, returnbydate):
     cur = con.cursor()
-    cur.execute('select shareable, shared from tools where barcode = %s', barcode)
+    cur.execute('select shareable, shared from tools where barcode = %s;', barcode)
     rows = cur.fetchall()
     if rows[0] == False:
         return 'Tool not shareable'
     elif rows[1] == True:
         return 'Tool currently being shared'
-    cur.execute("update tools set shared = true where barcode = %s", barcode)
-    cur.execute("select max(rid) from requests")
+    cur.execute("update tools set shared = true where barcode = %s;", barcode)
+    cur.execute("select max(rid) from requests;")
     rows = cur.fetchall()
     rid = rows[0]
     cur.execute("insert into requests (rid, barcode, daterequired, status, returnbydate, requester, requestee) values "
-                "(%s, %s, %s, 0 %s,%s, %s)", rid, barcode, daterequired, returnbydate, requester, requestee)
+                "(%s, %s, %s, 0 %s,%s, %s);", rid, barcode, daterequired, returnbydate, requester, requestee)
     con.commit()
     # update catalogue once that's implamented
     cur.close()
@@ -49,6 +49,6 @@ def make_request(con, requester, requestee, barcode, daterequired, returnbydate)
 
 def request_completed(con, requester, requestee, barcode):
     cur = con.cursor()
-    cur.execute("update tools set shared = false where barcode = %i", barcode)
-    cur.execute("update requests set status = 1 where barcode = %i", barcode)
+    cur.execute("update tools set shared = false where barcode = %s;", barcode)
+    cur.execute("update requests set status = 1 where barcode = %s;", barcode)
     cur.close()
