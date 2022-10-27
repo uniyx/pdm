@@ -3,7 +3,7 @@ cli.py, Command line interface for PDM Tools Database
 Author: Gian Esteves
 """
 
-from unicodedata import category
+from requests import *
 from tools import *
 
 def main():
@@ -145,16 +145,23 @@ def print_mainmenu():
     print("4. Delete tool")
     print("5. Add category")
     print("6. Search for tool")
+    print("7. View catalogue")
+    print("8. Create request")
     print("9. Exit")
 
     val = input("Select: ")
     match int(val):
         case 1:
             print_tools()
+            print_mainmenu()
         case 2:
             print_addtool()
         case 5:
             print_addcategory()
+        case 7:
+            print_catalogue()
+        case 8:
+            print_request(con, curruser)
         case 9:
             print("Exiting...")
             exit()
@@ -216,10 +223,10 @@ def print_addtool():
     cur = con.cursor()
 
     # Get number of rows
-    SQL = "SELECT COUNT(*) FROM tools"
+    SQL = "SELECT barcode FROM tools ORDER BY barcode DESC"
     cur.execute(SQL)
     result = cur.fetchone()
-    barcode = result[0]
+    barcode = result[0] + 1
 
     name = input("Name: ")
     description = input("Description: ")
@@ -284,6 +291,39 @@ def print_tools():
     print("----------------------------------------")
 
     cur.close()
+
+def print_catalogue():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    # Only print tools that are set as shareable
+    # Select all user's tool ids from catalogue_tools table
+    SQL = "SELECT * FROM tools WHERE shareable = true ORDER BY Barcode ASC"
+    cur.execute(SQL)
+
+    tools = [r for r in cur.fetchall()]
+    for tool in tools:
+
+        barcode = tool[0]
+
+        SQL = "SELECT * FROM catalogue_tools WHERE toolid = %s"
+        data = (barcode,)
+        cur.execute(SQL, data)
+
+        owner = [r for r in cur.fetchall()][0][0]
+
+        SQL = "SELECT username FROM users WHERE uid = %s"
+        data = (owner,)
+        cur.execute(SQL, data)
+
+        owner = [r for r in cur.fetchall()][0][0]
+
+        print("Owner: {} Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(tool[0], owner,
+                            tool[1], tool[2], tool[3], tool[5]))
+
+    cur.close()
+
+    print_mainmenu()
 
 def exit():
     # save changes
