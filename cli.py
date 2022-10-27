@@ -558,12 +558,18 @@ def print_sentrequests():
 
     rid = input("Select a request id: ")
 
-    # Get status
-    SQL = "SELECT status FROM requests WHERE rid = %s"
+    # Get request data
+    SQL = "SELECT * FROM requests WHERE rid = %s"
     data = (rid,)
     cur.execute(SQL, data)
 
-    status = cur.fetchall()[0][0]
+    requestdata = [r for r in cur.fetchall()]
+
+    print(requestdata)
+
+    status = requestdata[0][3]
+    requestee = requestdata[0][6]
+    toolid = requestdata[0][1]
 
     # User's options for the request
     if status == 0:
@@ -583,7 +589,7 @@ def print_sentrequests():
 
                 # Change catalogues
                 SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
-                data = (request[6], request[1])
+                data = (requestee, toolid)
                 cur.execute(SQL, data)
 
                 # Update shareable
@@ -641,12 +647,18 @@ def print_receivedrequests():
 
     rid = input("Select a request id: ")
 
-    # Get status
-    SQL = "SELECT status FROM requests WHERE rid = %s"
+    # Get request data
+    SQL = "SELECT * FROM requests WHERE rid = %s"
     data = (rid,)
     cur.execute(SQL, data)
 
-    status = cur.fetchall()[0][0]
+    requestdata = [r for r in cur.fetchall()]
+
+    print(requestdata)
+
+    status = requestdata[0][3]
+    requester = requestdata[0][5]
+    toolid = requestdata[0][1]
 
     # User's options for the request
     if status == 0:
@@ -664,7 +676,7 @@ def print_receivedrequests():
 
                 # Change catalogues
                 SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
-                data = (request[5], request[1])
+                data = (requester, toolid)
                 cur.execute(SQL, data)
 
                 # Update shareable
