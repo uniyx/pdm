@@ -430,8 +430,6 @@ def print_catalogue():
 
     tools = [r for r in cur.fetchall()]
 
-    print(tools)
-
     if len(tools) == 0:
         print("No tools available")
 
