@@ -146,14 +146,14 @@ def print_mainmenu():
     print("5. Add category")
     print("6. Search for tool")
     print("7. View catalogue")
-    print("8. Create request")
-    print("9. Exit")
+    print("8. Manage requests")
+    print("9. Sign out")
+    print("0. Exit")
 
     val = input("Select: ")
     match int(val):
         case 1:
-            print_tools()
-            print_mainmenu()
+            print_status()
         case 2:
             print_addtool()
         case 3:
@@ -165,9 +165,10 @@ def print_mainmenu():
         case 7:
             print_catalogue()
         case 8:
-            print_request(con, curruser)
+            print_managerequests()
         case 9:
-            print("Exiting...")
+            print_login()
+        case 0:
             exit()
         case default:
             print_mainmenu()
@@ -244,8 +245,8 @@ def print_addtool():
     purchasedate = datetime.now()
     
     # Insert into tools table
-    SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s)"
-    data = (barcode, name, description, purchaseprice, shareable, purchasedate)
+    SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    data = (barcode, name, description, purchaseprice, shareable, purchasedate, False)
     cur.execute(SQL, data)
 
     # Update tool_categories table
@@ -423,8 +424,9 @@ def print_catalogue():
 
     # Only print tools that are set as shareable
     # Select all user's tool ids from catalogue_tools table
-    SQL = "SELECT * FROM tools WHERE shareable = true ORDER BY Barcode ASC"
-    cur.execute(SQL)
+    SQL = "SELECT * FROM tools WHERE shareable = %s ORDER BY name ASC"
+    data = (True,)
+    cur.execute(SQL, data)
 
     tools = [r for r in cur.fetchall()]
     for tool in tools:
@@ -437,15 +439,311 @@ def print_catalogue():
 
         owner = [r for r in cur.fetchall()][0][0]
 
+        # ignore if curruser owns tool
+        if owner == curruser:
+            continue
+
         SQL = "SELECT username FROM users WHERE uid = %s"
         data = (owner,)
         cur.execute(SQL, data)
 
         owner = [r for r in cur.fetchall()][0][0]
 
-        print("Owner: {} Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(tool[0], owner,
+        print("Owner: {}, Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(owner, tool[0],
                             tool[1], tool[2], tool[3], tool[5]))
 
+    cur.close()
+
+def print_status():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    SQL = "SELECT * FROM users WHERE uid = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    userdata = cur.fetchall()[0]
+    name = userdata[4] + " " + userdata[5]
+
+    print("UserID: {}, Username: {}, Email: {}, Name: {}, User since: {}".format(userdata[0], userdata[2],
+                                    userdata[1], name, userdata[6]))
+
+    print_tools()
+
+    cur.close()
+
+    print_mainmenu()
+
+def print_managerequests():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    # Get sent requests
+    SQL = "SELECT COUNT(*) FROM requests WHERE requester = %s AND status = %s"
+    data = (curruser, 1)
+    cur.execute(SQL, data)
+
+    sentcount = cur.fetchall()[0][0]
+
+    # Get received requests
+    SQL = "SELECT COUNT(*) FROM requests WHERE requestee = %s AND status = %s"
+    data = (curruser, 0)
+    cur.execute(SQL, data)
+
+    receivedcount = cur.fetchall()[0][0]
+
+    print("1. Create request")
+    print("2. View sent requests ({} new)".format(sentcount))
+    print("3. View received requests ({} new)".format(receivedcount))
+    print("4. Main menu")
+
+    val = input("Select: ")
+    match int(val):
+        case 1:
+            print_createrequest()
+        case 2:
+            print_sentrequests()
+        case 3:
+            print_receivedrequests()
+        case 4:
+            print_mainmenu()
+        case defualt:
+            print_managerequests()
+
+    cur.close()
+
+    print_mainmenu()
+
+def print_sentrequests():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    SQL = "SELECT * FROM requests WHERE requester = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    requests = cur.fetchall()
+
+    for request in requests:
+        # Get tool name
+        SQL = "SELECT NAME FROM tools WHERE barcode = %s"
+        data = (request[1],)
+        cur.execute(SQL, data)
+
+        toolname = cur.fetchall()[0][0]
+
+        # Status
+        if request[3] == 0:
+            statustext = "Waiting"
+        if request[3] == 1:
+            statustext = "Borrowing"
+        if request[3] == 2:
+            statustext = "Returned"
+
+        # Get owner's name
+        SQL = "SELECT username FROM users WHERE uid = %s"
+        data = (request[6],)
+        cur.execute(SQL, data)
+
+        requestee = cur.fetchall()[0][0]
+
+        print("Request ID: {}, Status: {}, Tool: {}, Requestee: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
+                                requestee, request[2], request[4]))
+
+    rid = input("Select a request id: ")
+
+    # Get status
+    SQL = "SELECT status FROM requests WHERE rid = %s"
+    data = (rid,)
+    cur.execute(SQL, data)
+
+    status = cur.fetchall()[0][0]
+
+    # User's options for the request
+    if status == 0:
+        print_managerequests()
+
+    if status == 1:
+        print("1. Return")
+        print("2. Back")
+
+        val = input("Select: ")
+        match int(val):
+            case 1:
+                # Update status
+                SQL = "UPDATE requests SET status = %s WHERE rid = %s"
+                data = (2, rid)
+                cur.execute(SQL, data)
+
+                # Change catalogues
+                SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
+                data = (curruser, request[1])
+                cur.execute(SQL, data)
+
+                # Update shareable
+                SQL = "UPDATE tools SET shareable = %s"
+                data = (True,)
+                cur.execute(SQL, data)
+
+                con.commit()
+
+                print("Returned the tool")
+                print_managerequests()
+            case 2:
+                print_managerequests()
+            case default:
+                print_managerequests()
+
+    if status == 2:
+        print_managerequests()
+
+def print_receivedrequests():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    SQL = "SELECT * FROM requests WHERE requestee = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    requests = cur.fetchall()
+
+    for request in requests:
+        # Get tool name
+        SQL = "SELECT NAME FROM tools WHERE barcode = %s"
+        data = (request[1],)
+        cur.execute(SQL, data)
+
+        toolname = cur.fetchall()[0][0]
+
+        # Status
+        if request[3] == 0:
+            statustext = "Waiting"
+        if request[3] == 1:
+            statustext = "Borrowing"
+        if request[3] == 2:
+            statustext = "Returned"
+
+        # Get owner's name
+        SQL = "SELECT username FROM users WHERE uid = %s"
+        data = (request[5],)
+        cur.execute(SQL, data)
+
+        requester = cur.fetchall()[0][0]
+
+        print("Request ID: {}, Status: {}, Tool: {}, Requester: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
+                                requester, request[2], request[4]))
+
+    rid = input("Select a request id: ")
+
+    # Get status
+    SQL = "SELECT status FROM requests WHERE rid = %s"
+    data = (rid,)
+    cur.execute(SQL, data)
+
+    status = cur.fetchall()[0][0]
+
+    # User's options for the request
+    if status == 0:
+        print("1. Accept")
+        print("2. Decline")
+        print("3. Back")
+
+        val = input("Select: ")
+        match int(val):
+            case 1:
+                # Update status
+                SQL = "UPDATE requests SET status = %s WHERE rid = %s"
+                data = (1, rid)
+                cur.execute(SQL, data)
+
+                # Change catalogues
+                SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
+                data = (request[5], request[1])
+                cur.execute(SQL, data)
+
+                # Update shareable
+                SQL = "UPDATE tools SET shareable = %s"
+                data = (False,)
+                cur.execute(SQL, data)
+
+                con.commit()
+
+                print("Accepted the request")
+                print_managerequests()
+            case 2:
+                SQL = "UPDATE requests SET status = %s WHERE rid = %s"
+                data = (2, rid)
+                cur.execute(SQL, data)
+
+                con.commit()
+
+                print("Declined the request")
+                print_managerequests()
+            case 3:
+                print_managerequests()
+
+    if status == 1:
+        print_managerequests()
+
+    if status == 2:
+        print_managerequests()
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_managerequests()
+
+def print_createrequest():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    print_catalogue()
+
+    print("Choose which tool you would like to request")
+    barcode = input("Select: ")
+    print("What date would you want the tool by (2002-09-17)")
+    date = input("Date: ")
+    date = datetime.strptime(date, '%Y-%m-%d')
+    print("What date will you return the tool by (2002-09-17)")
+    returndate = input("Return Date: ")
+    returndate = datetime.strptime(returndate, '%Y-%m-%d')
+
+    # Get requested tool's owner
+    SQL = "SELECT clogid FROM catalogue_tools WHERE toolid = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    owner = cur.fetchall()[0][0]
+
+    # Check if requests table empty
+    SQL = "SELECT COUNT(*) FROM requests"
+    cur.execute(SQL)
+
+    rowcount = cur.fetchall()[0][0]
+    if rowcount == 0:
+        rid = 0
+    if rowcount > 0:
+        # Get number of rows
+        SQL = "SELECT rid FROM requests ORDER BY rid DESC"
+        cur.execute(SQL)
+        result = cur.fetchone()
+        rid = result[0] + 1
+
+    SQL = "INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    data = (rid, barcode, date, 0, returndate, curruser, owner)
+    cur.execute(SQL, data)
+
+    # Get owner's name
+    SQL = "SELECT username FROM users WHERE uid = %s"
+    data = (owner,)
+    cur.execute(SQL, data)
+
+    ownername = cur.fetchall()[0][0]
+    print("Made request to {}".format(ownername))
+
+    # save changes
+    con.commit()
     cur.close()
 
     print_mainmenu()
