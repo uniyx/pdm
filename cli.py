@@ -147,7 +147,8 @@ def print_mainmenu():
     print("6. Search for tool")
     print("7. View catalogue")
     print("8. Create request")
-    print("9. Exit")
+    print("9. Sign out")
+    print("0. Exit")
 
     val = input("Select: ")
     match int(val):
@@ -164,9 +165,11 @@ def print_mainmenu():
         case 7:
             print_catalogue()
         case 8:
-            print_request(con, curruser)
+            print_createrequest()
+            print_mainmenu()
         case 9:
-            print("Exiting...")
+            print_login()
+        case 0:
             exit()
         case default:
             print_mainmenu()
@@ -422,8 +425,9 @@ def print_catalogue():
 
     # Only print tools that are set as shareable
     # Select all user's tool ids from catalogue_tools table
-    SQL = "SELECT * FROM tools WHERE shareable = true ORDER BY Barcode ASC"
-    cur.execute(SQL)
+    SQL = "SELECT * FROM tools WHERE shareable = %s ORDER BY Barcode ASC"
+    data = (True,)
+    cur.execute(SQL, data)
 
     tools = [r for r in cur.fetchall()]
     for tool in tools:
@@ -436,18 +440,20 @@ def print_catalogue():
 
         owner = [r for r in cur.fetchall()][0][0]
 
+        # ignore if curruser owns tool
+        if owner == curruser:
+            continue
+
         SQL = "SELECT username FROM users WHERE uid = %s"
         data = (owner,)
         cur.execute(SQL, data)
 
         owner = [r for r in cur.fetchall()][0][0]
 
-        print("Owner: {}, Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(tool[0], owner,
+        print("Owner: {}, Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(owner, tool[0],
                             tool[1], tool[2], tool[3], tool[5]))
 
     cur.close()
-
-    print_mainmenu()
 
 def print_status():
     print("----------------------------------------")
@@ -469,8 +475,59 @@ def print_status():
 
     print_mainmenu()
 
-def print_request():
-    print("")
+def print_createrequest():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    print_catalogue()
+
+    print("Choose which tool you would like to request")
+    barcode = input("Select: ")
+    print("What date would you want the tool by (2002-09-17)")
+    date = input("Date: ")
+    date = datetime.strptime(date, '%Y-%m-%d')
+    print("What date will you return the tool by (2002-09-17)")
+    returndate = input("Return Date: ")
+    returndate = datetime.strptime(returndate, '%Y-%m-%d')
+
+    # Get requested tool's owner
+    SQL = "SELECT clogid FROM catalogue_tools WHERE toolid = %s"
+    data = (barcode,)
+    cur.execute(SQL, data)
+
+    owner = cur.fetchall()[0][0]
+
+    # Check if requests table empty
+    SQL = "SELECT COUNT(*) FROM requests"
+    cur.execute(SQL)
+
+    rowcount = cur.fetchall()[0][0]
+    if rowcount == 0:
+        rid = 0
+
+        SQL = "INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        data = (rid, barcode, date, 0, returndate, curruser, owner)
+        cur.execute(SQL, data)
+
+        print("Made request")
+    if rowcount > 0:
+        # Get number of rows
+        SQL = "SELECT rid FROM requests ORDER BY rid DESC"
+        cur.execute(SQL)
+        result = cur.fetchone()
+        rid = result[0] + 1
+
+        SQL = "INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        data = (rid, barcode, date, 0, returndate, curruser, owner)
+        cur.execute(SQL, data)
+
+        print("Made request")
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print_mainmenu()
 
 def exit():
     # save changes
