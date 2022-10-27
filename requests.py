@@ -1,5 +1,6 @@
 import psycopg2
 
+
 def print_request(connection, UID):
     con = connection
 
