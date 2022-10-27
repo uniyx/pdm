@@ -534,13 +534,10 @@ def print_receivedrequests():
 
         # Status
         if request[3] == 0:
-            status = 0
             statustext = "Waiting"
         if request[3] == 1:
-            status = 1
             statustext = "Borrowing"
         if request[3] == 2:
-            status = 2
             statustext = "Returned"
 
         # Get owner's name
@@ -548,12 +545,19 @@ def print_receivedrequests():
         data = (request[5],)
         cur.execute(SQL, data)
 
-        ownername = cur.fetchall()[0][0]
+        requester = cur.fetchall()[0][0]
 
-        print("Request ID: {}, Status: {}, Tool: {}, Owner: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
-                                ownername, request[2], request[4]))
+        print("Request ID: {}, Status: {}, Tool: {}, Requester: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
+                                requester, request[2], request[4]))
 
     rid = input("Select a request id: ")
+
+    # Get status
+    SQL = "SELECT status FROM requests WHERE rid = %s"
+    data = (rid,)
+    cur.execute(SQL, data)
+
+    status = cur.fetchall()[0][0]
 
     # User's options for the request
     if status == 0:
@@ -564,7 +568,20 @@ def print_receivedrequests():
         val = input("Select: ")
         match int(val):
             case 1:
-                transfertool(rid)
+                SQL = "UPDATE requests SET status = %s WHERE rid = %s"
+                data = (1, rid)
+                cur.execute(SQL, data)
+
+                SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
+                #print(request)
+                #print(request[5], request[1])
+                data = (request[5], request[1])
+                cur.execute(SQL, data)
+
+                con.commit()
+
+                print("Accepted the request")
+                print_managerequests()
             case 2:
                 SQL = "UPDATE requests SET status = %s WHERE rid = %s"
                 data = (2, rid)
@@ -594,7 +611,10 @@ def print_receivedrequests():
     print_managerequests()
 
 def transfertool(rid):
-    print("")
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    SQL
 
 def print_createrequest():
     print("----------------------------------------")
