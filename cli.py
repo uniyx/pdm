@@ -3,7 +3,6 @@ cli.py, Command line interface for PDM Tools Database
 Author: Gian Esteves
 """
 
-from requests import *
 from tools import *
 
 def main():
@@ -75,7 +74,7 @@ def print_login():
     cur.close()
 
     # return uid
-    global curruser 
+    global curruser
     curruser = uid
 
     print_mainmenu()
@@ -164,6 +163,7 @@ def print_mainmenu():
             print_addcategory()
         case 7:
             print_catalogue()
+            print_mainmenu()
         case 8:
             print_managerequests()
         case 9:
@@ -191,7 +191,7 @@ def print_addcategory():
     cur.execute(SQL, data)
 
     # Create new category itself
-    
+
 
     print("Created {} category.".format(categoryname))
 
@@ -243,7 +243,7 @@ def print_addtool():
     print("Choose categories and separate by spaces. Eg: 0 1 2")
     categories = input("Categories: ")
     purchasedate = datetime.now()
-    
+
     # Insert into tools table
     SQL = "INSERT INTO tools VALUES (%s, %s, %s, %s, %s, %s, %s)"
     data = (barcode, name, description, purchaseprice, shareable, purchasedate, False)
@@ -371,7 +371,7 @@ def print_tooledit():
                 SQL = "INSERT INTO tool_categories VALUES (%s, %s)"
                 data = (catid, barcode)
                 cur.execute(SQL, data)
-            
+
         case 6:
             newdata = input("New Shareable, 0 or 1: ")
 
@@ -382,7 +382,7 @@ def print_tooledit():
             print_tooledit()
 
     cur.close()
-        
+
     # save changes
     con.commit()
     cur.close()
@@ -429,6 +429,12 @@ def print_catalogue():
     cur.execute(SQL, data)
 
     tools = [r for r in cur.fetchall()]
+
+    if len(tools) == 0:
+        print("No tools available")
+
+        print_mainmenu()
+
     for tool in tools:
 
         barcode = tool[0]
@@ -577,7 +583,7 @@ def print_sentrequests():
 
                 # Change catalogues
                 SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
-                data = (curruser, request[1])
+                data = (request[6], request[1])
                 cur.execute(SQL, data)
 
                 # Update shareable
@@ -755,7 +761,7 @@ def exit():
     # close the connection
     con.close()
 
-    print("Exited.")
+    return 0
 
 if __name__ == "__main__":
     main()
