@@ -146,7 +146,7 @@ def print_mainmenu():
     print("5. Add category")
     print("6. Search for tool")
     print("7. View catalogue")
-    print("8. Create request")
+    print("8. Manage requests")
     print("9. Sign out")
     print("0. Exit")
 
@@ -165,8 +165,7 @@ def print_mainmenu():
         case 7:
             print_catalogue()
         case 8:
-            print_createrequest()
-            print_mainmenu()
+            print_managerequests()
         case 9:
             print_login()
         case 0:
@@ -425,7 +424,7 @@ def print_catalogue():
 
     # Only print tools that are set as shareable
     # Select all user's tool ids from catalogue_tools table
-    SQL = "SELECT * FROM tools WHERE shareable = %s ORDER BY Barcode ASC"
+    SQL = "SELECT * FROM tools WHERE shareable = %s ORDER BY name ASC"
     data = (True,)
     cur.execute(SQL, data)
 
@@ -475,6 +474,128 @@ def print_status():
 
     print_mainmenu()
 
+def print_managerequests():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    # Get sent requests
+    SQL = "SELECT COUNT(*) FROM requests WHERE requester = %s AND status = %s"
+    data = (curruser, 1)
+    cur.execute(SQL, data)
+
+    sentcount = cur.fetchall()[0][0]
+
+    # Get received requests
+    SQL = "SELECT COUNT(*) FROM requests WHERE requestee = %s AND status = %s"
+    data = (curruser, 0)
+    cur.execute(SQL, data)
+
+    receivedcount = cur.fetchall()[0][0]
+
+    print("1. Create request")
+    print("2. View sent requests ({} new)".format(sentcount))
+    print("3. View received requests ({} new)".format(receivedcount))
+    print("4. Main menu")
+
+    val = input("Select: ")
+    match int(val):
+        case 1:
+            print_createrequest()
+        case 2:
+            print_addtool()
+        case 3:
+            print_receivedrequests()
+        case 4:
+            print_mainmenu()
+        case defualt:
+            print_managerequests()
+
+    cur.close()
+
+    print_mainmenu()
+
+def print_receivedrequests():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    SQL = "SELECT * FROM requests WHERE requestee = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    requests = cur.fetchall()
+
+    for request in requests:
+        # Get tool name
+        SQL = "SELECT NAME FROM tools WHERE barcode = %s"
+        data = (request[1],)
+        cur.execute(SQL, data)
+
+        toolname = cur.fetchall()[0][0]
+
+        # Status
+        if request[3] == 0:
+            status = 0
+            statustext = "Waiting"
+        if request[3] == 1:
+            status = 1
+            statustext = "Borrowing"
+        if request[3] == 2:
+            status = 2
+            statustext = "Returned"
+
+        # Get owner's name
+        SQL = "SELECT username FROM users WHERE uid = %s"
+        data = (request[5],)
+        cur.execute(SQL, data)
+
+        ownername = cur.fetchall()[0][0]
+
+        print("Request ID: {}, Status: {}, Tool: {}, Owner: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
+                                ownername, request[2], request[4]))
+
+    rid = input("Select a request id: ")
+
+    # User's options for the request
+    if status == 0:
+        print("1. Accept")
+        print("2. Decline")
+        print("3. Back")
+
+        val = input("Select: ")
+        match int(val):
+            case 1:
+                transfertool(rid)
+            case 2:
+                SQL = "UPDATE requests SET status = %s WHERE rid = %s"
+                data = (2, rid)
+                cur.execute(SQL, data)
+
+                con.commit()
+
+                print("Declined the request")
+                print_managerequests()
+            case 3:
+                print_receivedrequests()
+
+    if status == 1:
+        print("1. Return tool")
+        print("2. Back")
+
+    if status == 2:
+        print_receivedrequests()
+
+
+    # save changes
+    con.commit()
+    cur.close()
+
+    print("...")
+
+    print_managerequests()
+
+def transfertool(rid):
+    print("")
+
 def print_createrequest():
     print("----------------------------------------")
     cur = con.cursor()
@@ -504,12 +625,6 @@ def print_createrequest():
     rowcount = cur.fetchall()[0][0]
     if rowcount == 0:
         rid = 0
-
-        SQL = "INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        data = (rid, barcode, date, 0, returndate, curruser, owner)
-        cur.execute(SQL, data)
-
-        print("Made request")
     if rowcount > 0:
         # Get number of rows
         SQL = "SELECT rid FROM requests ORDER BY rid DESC"
@@ -517,11 +632,17 @@ def print_createrequest():
         result = cur.fetchone()
         rid = result[0] + 1
 
-        SQL = "INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        data = (rid, barcode, date, 0, returndate, curruser, owner)
-        cur.execute(SQL, data)
+    SQL = "INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    data = (rid, barcode, date, 0, returndate, curruser, owner)
+    cur.execute(SQL, data)
 
-        print("Made request")
+    # Get owner's name
+    SQL = "SELECT username FROM users WHERE uid = %s"
+    data = (owner,)
+    cur.execute(SQL, data)
+
+    ownername = cur.fetchall()[0][0]
+    print("Made request to {}".format(ownername))
 
     # save changes
     con.commit()
