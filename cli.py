@@ -502,7 +502,7 @@ def print_managerequests():
         case 1:
             print_createrequest()
         case 2:
-            print_addtool()
+            print_sentrequests()
         case 3:
             print_receivedrequests()
         case 4:
@@ -513,6 +513,89 @@ def print_managerequests():
     cur.close()
 
     print_mainmenu()
+
+def print_sentrequests():
+    print("----------------------------------------")
+    cur = con.cursor()
+
+    SQL = "SELECT * FROM requests WHERE requester = %s"
+    data = (curruser,)
+    cur.execute(SQL, data)
+
+    requests = cur.fetchall()
+
+    for request in requests:
+        # Get tool name
+        SQL = "SELECT NAME FROM tools WHERE barcode = %s"
+        data = (request[1],)
+        cur.execute(SQL, data)
+
+        toolname = cur.fetchall()[0][0]
+
+        # Status
+        if request[3] == 0:
+            statustext = "Waiting"
+        if request[3] == 1:
+            statustext = "Borrowing"
+        if request[3] == 2:
+            statustext = "Returned"
+
+        # Get owner's name
+        SQL = "SELECT username FROM users WHERE uid = %s"
+        data = (request[6],)
+        cur.execute(SQL, data)
+
+        requestee = cur.fetchall()[0][0]
+
+        print("Request ID: {}, Status: {}, Tool: {}, Requestee: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
+                                requestee, request[2], request[4]))
+
+    rid = input("Select a request id: ")
+
+    # Get status
+    SQL = "SELECT status FROM requests WHERE rid = %s"
+    data = (rid,)
+    cur.execute(SQL, data)
+
+    status = cur.fetchall()[0][0]
+
+    # User's options for the request
+    if status == 0:
+        print_managerequests()
+
+    if status == 1:
+        print("1. Return")
+        print("2. Back")
+
+        val = input("Select: ")
+        match int(val):
+            case 1:
+                # Update status
+                SQL = "UPDATE requests SET status = %s WHERE rid = %s"
+                data = (2, rid)
+                cur.execute(SQL, data)
+
+                # Change catalogues
+                SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
+                data = (curruser, request[1])
+                cur.execute(SQL, data)
+
+                # Update shareable
+                SQL = "UPDATE tools SET shareable = %s"
+                data = (True,)
+                cur.execute(SQL, data)
+
+                con.commit()
+
+                print("Returned the tool")
+                print_managerequests()
+            case 2:
+                print_managerequests()
+            case default:
+                print_managerequests()
+
+    if status == 2:
+        print_managerequests()
 
 def print_receivedrequests():
     print("----------------------------------------")
@@ -568,14 +651,19 @@ def print_receivedrequests():
         val = input("Select: ")
         match int(val):
             case 1:
+                # Update status
                 SQL = "UPDATE requests SET status = %s WHERE rid = %s"
                 data = (1, rid)
                 cur.execute(SQL, data)
 
+                # Change catalogues
                 SQL = "UPDATE catalogue_tools SET clogid = %s WHERE toolid = %s"
-                #print(request)
-                #print(request[5], request[1])
                 data = (request[5], request[1])
+                cur.execute(SQL, data)
+
+                # Update shareable
+                SQL = "UPDATE tools SET shareable = %s"
+                data = (False,)
                 cur.execute(SQL, data)
 
                 con.commit()
@@ -592,29 +680,19 @@ def print_receivedrequests():
                 print("Declined the request")
                 print_managerequests()
             case 3:
-                print_receivedrequests()
+                print_managerequests()
 
     if status == 1:
-        print("1. Return tool")
-        print("2. Back")
+        print_managerequests()
 
     if status == 2:
-        print_receivedrequests()
-
+        print_managerequests()
 
     # save changes
     con.commit()
     cur.close()
 
-    print("...")
-
     print_managerequests()
-
-def transfertool(rid):
-    print("----------------------------------------")
-    cur = con.cursor()
-
-    SQL
 
 def print_createrequest():
     print("----------------------------------------")
