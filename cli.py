@@ -32,7 +32,9 @@ def print_signin():
 
 def print_login():
     print("----------------------------------------")
-    username = input("Username: ")
+    username = input("Enter Username or 'Back': ")
+    if username == 'Back':
+        print_signin()
 
     # Find if user exists
     cur = con.cursor()
