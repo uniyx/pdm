@@ -131,6 +131,7 @@ def print_createacc():
     cur.close()
 
     print("{} added to the database.".format(username))
+    print("When creating tools, Please create a category first")
     print_signin()
 
 def create_catalogue(uid, username):
