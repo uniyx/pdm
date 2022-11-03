@@ -87,6 +87,9 @@ def print_createacc():
     email = input("Email: ")
     # Make sure that username is unique
     username = input("Username: ")
+    if username == 'Back':
+        print("Invalid Username")
+        print_createacc()
 
     cur = con.cursor()
     cur.execute("SELECT username FROM users")
