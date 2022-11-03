@@ -242,7 +242,7 @@ def print_addtool():
 
     name = input("Name: ")
     description = input("Description: ")
-    purchaseprice = input("Price: ")
+    purchaseprice = input("Price (rounded to whole number): ")
     shareable = input("Shareable: ")
 
     print_categories()
