@@ -84,7 +84,9 @@ def print_login():
 def print_createacc():
     print("----------------------------------------")
     # Multiple accounts under same email allowed
-    email = input("Email: ")
+    email = input("To stop creating an account, enter 'Back', otherwise enter your Email: ")
+    if email == 'Back':
+        print_signin()
     # Make sure that username is unique
     username = input("Username: ")
     if username == 'Back':
@@ -778,7 +780,7 @@ def exit():
     # close the connection
     con.close()
 
-    return 0
+    return quit()
 
 if __name__ == "__main__":
     main()
