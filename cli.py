@@ -548,9 +548,9 @@ def print_sentrequests():
         # Status
         if request[3] == 0:
             statustext = "Waiting"
-        if request[3] == 1:
+        elif request[3] == 1:
             statustext = "Borrowing"
-        if request[3] == 2:
+        else:
             statustext = "Returned"
 
         # Get owner's name
@@ -560,8 +560,8 @@ def print_sentrequests():
 
         requestee = cur.fetchall()[0][0]
 
-        print("Request ID: {}, Status: {}, Tool: {}, Requestee: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
-                                requestee, request[2], request[4]))
+        print("Request ID: {}, Status: {}, Tool: {}, Requestee: {}, Date Required: {}, Return Date: {}".format(request[0],
+                            statustext, toolname, requestee, request[2], request[4]))
 
     rid = input("Select a request id: ")
 
@@ -637,9 +637,9 @@ def print_receivedrequests():
         # Status
         if request[3] == 0:
             statustext = "Waiting"
-        if request[3] == 1:
+        elif request[3] == 1:
             statustext = "Borrowing"
-        if request[3] == 2:
+        else:
             statustext = "Returned"
 
         # Get owner's name
@@ -649,8 +649,8 @@ def print_receivedrequests():
 
         requester = cur.fetchall()[0][0]
 
-        print("Request ID: {}, Status: {}, Tool: {}, Requester: {}, Date Required: {}, Return Date: {}".format(request[0], statustext, toolname,
-                                requester, request[2], request[4]))
+        print("Request ID: {}, Status: {}, Tool: {}, Requester: {}, Date Required: {}, Return Date: {}".format(request[0],
+                            statustext, toolname, requester, request[2], request[4]))
 
     rid = input("Select a request id: ")
 
@@ -748,7 +748,7 @@ def print_createrequest():
     rowcount = cur.fetchall()[0][0]
     if rowcount == 0:
         rid = 0
-    if rowcount > 0:
+    else:
         # Get number of rows
         SQL = "SELECT rid FROM requests ORDER BY rid DESC"
         cur.execute(SQL)
