@@ -829,7 +829,7 @@ def exit():
 
 def secure(password):
     secure_password = password.encode()
-    hashed_pass = hashlib.sha3_256(secure_password)
+    hashed_pass = hashlib.sha3_512(secure_password)
     return hashed_pass.hexdigest()
 
 
