@@ -4,12 +4,19 @@ Author: Gian Esteves
 """
 
 from tools import *
+import sys
+import hashlib
+
+if sys.version_info < (3, 6):
+    import sha3
+
 
 def main():
     global con
     con = sshtunnel()
     global curruser
     print_signin()
+
 
 def print_signin():
     print("----------------------------------------")
@@ -30,6 +37,7 @@ def print_signin():
         case default:
             print_signin()
 
+
 def print_login():
     print("----------------------------------------")
     username = input("Enter Username or 'Back': ")
@@ -42,7 +50,7 @@ def print_login():
 
     # gets an array of tuples
     users = [r[0] for r in cur.fetchall()]
-    #print(users)
+    # print(users)
 
     if username not in users:
         print("Could not find user")
@@ -57,8 +65,8 @@ def print_login():
 
     realpassword = [r[0] for r in results][0]
     uid = [r[1] for r in results][0]
-    #lastaccess = [r[2] for r in results][0]
-
+    # lastaccess = [r[2] for r in results][0]
+    password = secure(password)
     if password == realpassword:
         print("Successfully logged in as {} ({}).".format(username, uid))
     else:
@@ -81,6 +89,7 @@ def print_login():
 
     print_mainmenu()
 
+
 def print_createacc():
     print("----------------------------------------")
     # Multiple accounts under same email allowed
@@ -98,13 +107,14 @@ def print_createacc():
 
     # gets an array of tuples
     users = [r[0] for r in cur.fetchall()]
-    #print(users)
+    # print(users)
 
     if username in users:
         print("Username already exists.")
         print_createacc()
 
     password = input("Password: ")
+    password = secure(password)
     firstname = input("First name: ")
     lastname = input("Last name: ")
 
@@ -134,6 +144,7 @@ def print_createacc():
     print("When creating tools, Please create a category first")
     print_signin()
 
+
 def create_catalogue(uid, username):
     print("Creating {}'s catalogue...".format(username))
 
@@ -143,6 +154,7 @@ def create_catalogue(uid, username):
     SQL = "INSERT INTO catalogue VALUES (%s, %s)"
     data = (uid, uid)
     cur.execute(SQL, data)
+
 
 def print_mainmenu():
     print("----------------------------------------")
@@ -181,6 +193,7 @@ def print_mainmenu():
         case default:
             print_mainmenu()
 
+
 def print_addcategory():
     print("----------------------------------------")
     categoryname = input("Category name: ")
@@ -200,7 +213,6 @@ def print_addcategory():
 
     # Create new category itself
 
-
     print("Created {} category.".format(categoryname))
 
     # save changes
@@ -208,6 +220,7 @@ def print_addcategory():
     cur.close()
 
     print_mainmenu()
+
 
 def print_categories():
     print("----------------------------------------")
@@ -268,7 +281,7 @@ def print_addtool():
     # Update catalogue_tools table
     SQL = "INSERT INTO catalogue_tools VALUES (%s, %s)"
     data = (curruser, barcode)
-    cur.execute(SQL,data)
+    cur.execute(SQL, data)
 
     print("Created {} tool.".format(name))
 
@@ -277,6 +290,7 @@ def print_addtool():
     cur.close()
 
     print_mainmenu()
+
 
 def print_tools():
     print("----------------------------------------")
@@ -314,10 +328,18 @@ def print_tools():
 
             catnames.append(cur.fetchall()[0][0])
 
-        print("Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}, Categories: {}, Shareable: {}".format(tool[0],
-                            tool[1], tool[2], tool[3], tool[5], catnames, tool[4]))
+        print(
+            "Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}, Categories: {}, Shareable: {}".format(tool[0],
+                                                                                                                tool[1],
+                                                                                                                tool[2],
+                                                                                                                tool[3],
+                                                                                                                tool[5],
+                                                                                                                catnames,
+                                                                                                                tool[
+                                                                                                                    4]))
 
     cur.close()
+
 
 def print_tooledit():
     print_tools()
@@ -397,6 +419,7 @@ def print_tooledit():
 
     print_mainmenu()
 
+
 def print_tooldelete():
     print_tools()
     print("----------------------------------------")
@@ -425,6 +448,7 @@ def print_tooldelete():
     cur.close()
 
     print_mainmenu()
+
 
 def print_catalogue():
     print("----------------------------------------")
@@ -464,9 +488,11 @@ def print_catalogue():
         owner = [r for r in cur.fetchall()][0][0]
 
         print("Owner: {}, Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}".format(owner, tool[0],
-                            tool[1], tool[2], tool[3], tool[5]))
+                                                                                              tool[1], tool[2], tool[3],
+                                                                                              tool[5]))
 
     cur.close()
+
 
 def print_status():
     print("----------------------------------------")
@@ -480,13 +506,14 @@ def print_status():
     name = userdata[4] + " " + userdata[5]
 
     print("UserID: {}, Username: {}, Email: {}, Name: {}, User since: {}".format(userdata[0], userdata[2],
-                                    userdata[1], name, userdata[6]))
+                                                                                 userdata[1], name, userdata[6]))
 
     print_tools()
 
     cur.close()
 
     print_mainmenu()
+
 
 def print_managerequests():
     print("----------------------------------------")
@@ -528,6 +555,7 @@ def print_managerequests():
 
     print_mainmenu()
 
+
 def print_sentrequests():
     print("----------------------------------------")
     cur = con.cursor()
@@ -561,8 +589,14 @@ def print_sentrequests():
 
         requestee = cur.fetchall()[0][0]
 
-        print("Request ID: {}, Status: {}, Tool: {}, Requestee: {}, Date Required: {}, Return Date: {}".format(request[0],
-                            statustext, toolname, requestee, request[2], request[4]))
+        print(
+            "Request ID: {}, Status: {}, Tool: {}, Requestee: {}, Date Required: {}, Return Date: {}".format(request[0],
+                                                                                                             statustext,
+                                                                                                             toolname,
+                                                                                                             requestee,
+                                                                                                             request[2],
+                                                                                                             request[
+                                                                                                                 4]))
 
     rid = input("Select a request id: ")
 
@@ -617,6 +651,7 @@ def print_sentrequests():
     if status == 2:
         print_managerequests()
 
+
 def print_receivedrequests():
     print("----------------------------------------")
     cur = con.cursor()
@@ -650,8 +685,14 @@ def print_receivedrequests():
 
         requester = cur.fetchall()[0][0]
 
-        print("Request ID: {}, Status: {}, Tool: {}, Requester: {}, Date Required: {}, Return Date: {}".format(request[0],
-                            statustext, toolname, requester, request[2], request[4]))
+        print(
+            "Request ID: {}, Status: {}, Tool: {}, Requester: {}, Date Required: {}, Return Date: {}".format(request[0],
+                                                                                                             statustext,
+                                                                                                             toolname,
+                                                                                                             requester,
+                                                                                                             request[2],
+                                                                                                             request[
+                                                                                                                 4]))
 
     rid = input("Select a request id: ")
 
@@ -720,6 +761,7 @@ def print_receivedrequests():
 
     print_managerequests()
 
+
 def print_createrequest():
     print("----------------------------------------")
     cur = con.cursor()
@@ -774,6 +816,7 @@ def print_createrequest():
 
     print_mainmenu()
 
+
 def exit():
     # save changes
     con.commit()
@@ -782,6 +825,13 @@ def exit():
     con.close()
 
     return quit()
+
+
+def secure(password):
+    secure_password = password.encode()
+    hashed_pass = hashlib.sha3_256(secure_password)
+    return hashed_pass.hexdigest()
+
 
 if __name__ == "__main__":
     main()
