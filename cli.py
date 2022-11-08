@@ -196,7 +196,9 @@ def print_mainmenu():
 
 def print_addcategory():
     print("----------------------------------------")
-    categoryname = input("Category name: ")
+    categoryname = input("Category name: or enter 'Back'")
+    if categoryname == "Back":
+        print_mainmenu()
 
     cur = con.cursor()
 
@@ -254,7 +256,9 @@ def print_addtool():
     result = cur.fetchone()
     barcode = result[0] + 1
 
-    name = input("Name: ")
+    name = input("Name: or enter 'Back'")
+    if name == 'Back':
+        print_mainmenu()
     description = input("Description: ")
     purchaseprice = input("Price (rounded to whole number): ")
     shareable = input("Shareable: ")
@@ -421,7 +425,9 @@ def print_tooldelete():
     cur = con.cursor()
 
     print("Select a tool to delete")
-    barcode = input("Barcode: ")
+    barcode = input("Barcode: or enter 'Back'")
+    if barcode == "Back":
+        print_mainmenu()
 
     # Delete old categories
     SQL = "DELETE FROM tool_categories WHERE toolid = %s"
@@ -794,7 +800,9 @@ def print_createrequest():
     print_catalogue()
 
     print("Choose which tool you would like to request")
-    barcode = input("Select: ")
+    barcode = input("Select: or enter 'Back'")
+    if barcode == "Back":
+        print_mainmenu()
     print("What date would you want the tool by (2002-09-17)")
     date = input("Date: ")
     date = datetime.strptime(date, '%Y-%m-%d')
