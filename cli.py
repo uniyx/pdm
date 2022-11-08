@@ -832,7 +832,7 @@ def secure(password):
 def recommend():
     cur = con.cursor()
     cur.execute("SELECT barcode FROM tool_stats ORDER BY times_lent DESC")
-    temp = [r[0] for r in cur.fetchall()[0][0]]
+    temp = [r[0] for r in cur.fetchall()]
     cur.execute("SELECT barcode FROM tools WHERE shareable = true")
     shareable = [r[0] for r in cur.fetchall()[0]]
     for r in temp:
