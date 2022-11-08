@@ -834,7 +834,7 @@ def recommend():
     cur.execute("SELECT barcode FROM tool_stats ORDER BY times_lent DESC")
     temp = [r[0] for r in cur.fetchall()]
     cur.execute("SELECT barcode FROM tools WHERE shareable = true")
-    shareable = [r[0] for r in cur.fetchall()[0]]
+    shareable = [r[0] for r in cur.fetchall()]
     for r in temp:
         if r not in shareable:
             temp.remove(r)
