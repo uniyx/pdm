@@ -656,8 +656,8 @@ def print_receivedrequests():
     for request in requests:
         # Get tool name
         SQL = "SELECT NAME FROM tools WHERE barcode = %s"
-        data = (request[1],)
-        cur.execute(SQL, data)
+        barcode = (request[1],)
+        cur.execute(SQL, barcode)
 
         toolname = cur.fetchall()[0][0]
 
@@ -723,6 +723,8 @@ def print_receivedrequests():
                 SQL = "UPDATE tools SET shareable = %s"
                 data = (False,)
                 cur.execute(SQL, data)
+
+                cur.execute("UPDATE tool_stats SET times_lent = times_lent + 1 WHERE barcode = %s", barcode)
 
                 con.commit()
 
