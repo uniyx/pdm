@@ -163,6 +163,7 @@ def print_mainmenu():
     print("7. View catalogue")
     print("8. Manage requests")
     print("9. Sign out")
+    print("10. Recommendations")
     print("0. Exit")
 
     val = input("Select: ")
@@ -184,6 +185,9 @@ def print_mainmenu():
             print_managerequests()
         case 9:
             print_login()
+        case 10:
+            recommend()
+            print_mainmenu()
         case 0:
             exit()
         case default:
@@ -589,7 +593,21 @@ def print_sentrequests():
                                                                                                              request[
                                                                                                                  4]))
 
-    rid = input("Select a request id: ")
+    cur.execute("SELECT rid FROM requests")
+    rids = [r[0] for r in cur.fetchall()]
+    loop = True
+    rid = input("Select a requet id: or 'Back'")
+    while loop:
+        if rid == 'Back':
+            cur.close()
+            print_mainmenu()
+        for r in rids:
+            if ("%s" % r) == rid:
+                loop = False
+                break
+        if not loop:
+            break
+        rid = input("INVALID RID. Please enter valid RID:")
 
     # Get request data
     SQL = "SELECT * FROM requests WHERE rid = %s"
@@ -685,7 +703,21 @@ def print_receivedrequests():
                                                                                                              request[
                                                                                                                  4]))
 
-    rid = input("Select a request id: ")
+    cur.execute("SELECT rid FROM requests")
+    rids = [r[0] for r in cur.fetchall()]
+    loop = True
+    rid = input("Select a requet id: or 'Back'")
+    while loop:
+        if rid == 'Back':
+            cur.close()
+            print_mainmenu()
+        for r in rids:
+            if ("%s"%r) == rid:
+                loop = False
+                break
+        if not loop:
+            break
+        rid = input("INVALID RID. Please enter valid RID:")
 
     # Get request data
     SQL = "SELECT * FROM requests WHERE rid = %s"
@@ -806,6 +838,8 @@ def print_createrequest():
     # save changes
     con.commit()
     cur.close()
+    print("\n")
+    recommend()
 
     print_mainmenu()
 
@@ -825,6 +859,30 @@ def secure(password):
     secure_password = password.encode()
     hashed_pass = hashlib.sha3_512(secure_password)
     return hashed_pass.hexdigest()
+
+
+def recommend():
+    cur = con.cursor()
+    cur.execute("SELECT barcode FROM tool_stats ORDER BY times_lent DESC")
+    temp = [r[0] for r in cur.fetchall()]
+    cur.execute("SELECT barcode FROM tools WHERE shareable = true")
+    shareable = [r[0] for r in cur.fetchall()]
+    for r in temp:
+        if r not in shareable:
+            temp.remove(r)
+    SQL = "SELECT name FROM tools where barcode = %s"
+    data = (temp[0],)
+    cur.execute(SQL, data)
+    one = [r[0] for r in cur.fetchall()]
+    cur.execute("SELECT name FROM tools where barcode = %s", (temp[1],))
+    two = [r[0] for r in cur.fetchall()]
+    cur.execute("SELECT name FROM tools where barcode = %s", (temp[2],))
+    three = [r[0] for r in cur.fetchall()]
+    print("We recommend checking out these popular tools:")
+    print("Name: %s\t Barcode: %d" % (one[0], temp[0]))
+    print("Name: %s\t Barcode: %d" % (two[0], temp[1]))
+    print("Name: %s\t Barcode: %d" % (three[0], temp[2]))
+    cur.close()
 
 
 if __name__ == "__main__":
