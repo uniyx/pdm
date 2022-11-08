@@ -849,7 +849,6 @@ def recommend():
     print("Name: %s Barcode: %s", one, temp[0])
     print("Name: %s Barcode: %s", two, temp[1])
     print("Name: %s Barcode: %s", three, temp[2])
-    cur.execute("SELECT barcode FROM tool_stats")
     cur.close()
 
 
