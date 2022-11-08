@@ -342,9 +342,10 @@ def print_tooledit():
     print("----------------------------------------")
     cur = con.cursor()
 
-    print("Select a tool to edit")
+    print("Select a tool to edit or 'Back'")
     barcode = input("Barcode: ")
-
+    if barcode == 'Back':
+        print_mainmenu()
     print("----------------------------------------")
     print("1. Name")
     print("2. Desciption")
