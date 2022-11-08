@@ -593,7 +593,21 @@ def print_sentrequests():
                                                                                                              request[
                                                                                                                  4]))
 
-    rid = input("Select a request id: ")
+    cur.execute("SELECT rid FROM requests")
+    rids = [r[0] for r in cur.fetchall()]
+    loop = True
+    rid = input("Select a requet id: or 'Back'")
+    while loop:
+        if rid == 'Back':
+            cur.close()
+            print_mainmenu()
+        for r in rids:
+            if ("%s" % r) == rid:
+                loop = False
+                break
+        if not loop:
+            break
+        rid = input("INVALID RID. Please enter valid RID:")
 
     # Get request data
     SQL = "SELECT * FROM requests WHERE rid = %s"
@@ -689,7 +703,21 @@ def print_receivedrequests():
                                                                                                              request[
                                                                                                                  4]))
 
-    rid = input("Select a request id: ")
+    cur.execute("SELECT rid FROM requests")
+    rids = [r[0] for r in cur.fetchall()]
+    loop = True
+    rid = input("Select a requet id: or 'Back'")
+    while loop:
+        if rid == 'Back':
+            cur.close()
+            print_mainmenu()
+        for r in rids:
+            if ("%s"%r) == rid:
+                loop = False
+                break
+        if not loop:
+            break
+        rid = input("INVALID RID. Please enter valid RID:")
 
     # Get request data
     SQL = "SELECT * FROM requests WHERE rid = %s"
