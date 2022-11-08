@@ -30,6 +30,8 @@ def print_signin():
         case 3:
             print("Exiting...")
             exit()
+        case 4:
+            recommend()
         case default:
             print_signin()
 
@@ -825,6 +827,30 @@ def secure(password):
     secure_password = password.encode()
     hashed_pass = hashlib.sha3_512(secure_password)
     return hashed_pass.hexdigest()
+
+
+def recommend():
+    cur = con.cursor()
+    cur.execute("SELECT barcode FROM tool_stats ORDER BY times_lent DESC")
+    temp = [r[0] for r in cur.fetchall()[0][0]]
+    cur.execute("SELECT barcode FROM tools WHERE shareable = true")
+    shareable = [r[0] for r in cur.fetchall()[0]]
+    for r in temp:
+        if r not in shareable:
+            temp.remove(r)
+    print(temp)
+    cur.execute("SELECT name FROM tools where barcode = %s", temp[0])
+    one = [r[0] for r in cur.fetchall()]
+    cur.execute("SELECT name FROM tools where barcode = %s", temp[1])
+    two = [r[0] for r in cur.fetchall()]
+    cur.execute("SELECT name FROM tools where barcode = %s", temp[2])
+    three = [r[0] for r in cur.fetchall()]
+    print("We recommend checking out these popular tools:")
+    print("Name: %s Barcode: %s", one, temp[0])
+    print("Name: %s Barcode: %s", two, temp[1])
+    print("Name: %s Barcode: %s", three, temp[2])
+    cur.execute("SELECT barcode FROM tool_stats")
+    cur.close()
 
 
 if __name__ == "__main__":
