@@ -326,13 +326,7 @@ def print_tools():
 
         print(
             "Barcode: {}, Name: {}, Description: {}, Price: {}, Date: {}, Categories: {}, Shareable: {}".format(tool[0],
-                                                                                                                tool[1],
-                                                                                                                tool[2],
-                                                                                                                tool[3],
-                                                                                                                tool[5],
-                                                                                                                catnames,
-                                                                                                                tool[
-                                                                                                                    4]))
+                    tool[1], tool[2], tool[3], tool[5], catnames, tool[4]))
 
     cur.close()
 
