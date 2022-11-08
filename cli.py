@@ -30,8 +30,6 @@ def print_signin():
         case 3:
             print("Exiting...")
             exit()
-        case 4:
-            recommend()
         case default:
             print_signin()
 
@@ -165,6 +163,7 @@ def print_mainmenu():
     print("7. View catalogue")
     print("8. Manage requests")
     print("9. Sign out")
+    print("10. Recommendations")
     print("0. Exit")
 
     val = input("Select: ")
@@ -186,6 +185,9 @@ def print_mainmenu():
             print_managerequests()
         case 9:
             print_login()
+        case 10:
+            recommend()
+            print_mainmenu()
         case 0:
             exit()
         case default:
@@ -808,6 +810,8 @@ def print_createrequest():
     # save changes
     con.commit()
     cur.close()
+    print("\n")
+    recommend()
 
     print_mainmenu()
 
@@ -838,24 +842,18 @@ def recommend():
     for r in temp:
         if r not in shareable:
             temp.remove(r)
-    print(temp)
-
-    # Check this out
     SQL = "SELECT name FROM tools where barcode = %s"
     data = (temp[0],)
     cur.execute(SQL, data)
     one = [r[0] for r in cur.fetchall()]
-
-    SQL = "SELECT name FROM tools where barcode = %s"
-    data = (temp[0],)
-    cur.execute("SELECT name FROM tools where barcode = %s", temp[1])
+    cur.execute("SELECT name FROM tools where barcode = %s", (temp[1],))
     two = [r[0] for r in cur.fetchall()]
-    cur.execute("SELECT name FROM tools where barcode = %s", temp[2])
+    cur.execute("SELECT name FROM tools where barcode = %s", (temp[2],))
     three = [r[0] for r in cur.fetchall()]
     print("We recommend checking out these popular tools:")
-    print("Name: %s Barcode: %s", one, temp[0])
-    print("Name: %s Barcode: %s", two, temp[1])
-    print("Name: %s Barcode: %s", three, temp[2])
+    print("Name: %s\t Barcode: %d" % (one[0], temp[0]))
+    print("Name: %s\t Barcode: %d" % (two[0], temp[1]))
+    print("Name: %s\t Barcode: %d" % (three[0], temp[2]))
     cur.close()
 
 
