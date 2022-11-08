@@ -344,10 +344,25 @@ def print_tooledit():
     print("----------------------------------------")
     cur = con.cursor()
 
-    print("Select a tool to edit or 'Back'")
-    barcode = input("Barcode: ")
-    if barcode == 'Back':
-        print_mainmenu()
+    print("Select a tool to edit")
+
+    cur.execute("SELECT barcode FROM tools")
+    codes = [r[0] for r in cur.fetchall()]
+    loop = True
+    barcode = input("Barcode: or enter 'Back'")
+    while loop:
+        if barcode == 'Back':
+            cur.close()
+            print_mainmenu()
+        for r in codes:
+            if ("%s" % r) == barcode:
+                loop = False
+                break
+        if not loop:
+            break
+        barcode = input("INVALID BARCODE. Please enter valid barcode:")
+
+
     print("----------------------------------------")
     print("1. Name")
     print("2. Desciption")
@@ -425,9 +440,22 @@ def print_tooldelete():
     cur = con.cursor()
 
     print("Select a tool to delete")
+
+    cur.execute("SELECT barcode FROM tools")
+    codes = [r[0] for r in cur.fetchall()]
+    loop = True
     barcode = input("Barcode: or enter 'Back'")
-    if barcode == "Back":
-        print_mainmenu()
+    while loop:
+        if barcode == 'Back':
+            cur.close()
+            print_mainmenu()
+        for r in codes:
+            if ("%s" % r) == barcode:
+                loop = False
+                break
+        if not loop:
+            break
+        barcode = input("INVALID BARCODE. Please enter valid barcode:")
 
     # Delete old categories
     SQL = "DELETE FROM tool_categories WHERE toolid = %s"
