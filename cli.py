@@ -832,15 +832,22 @@ def secure(password):
 def recommend():
     cur = con.cursor()
     cur.execute("SELECT barcode FROM tool_stats ORDER BY times_lent DESC")
-    temp = [r[0] for r in cur.fetchall()[0][0]]
+    temp = [r[0] for r in cur.fetchall()]
     cur.execute("SELECT barcode FROM tools WHERE shareable = true")
-    shareable = [r[0] for r in cur.fetchall()[0]]
+    shareable = [r[0] for r in cur.fetchall()]
     for r in temp:
         if r not in shareable:
             temp.remove(r)
     print(temp)
-    cur.execute("SELECT name FROM tools where barcode = %s", temp[0])
+
+    # Check this out
+    SQL = "SELECT name FROM tools where barcode = %s"
+    data = (temp[0],)
+    cur.execute(SQL, data)
     one = [r[0] for r in cur.fetchall()]
+
+    SQL = "SELECT name FROM tools where barcode = %s"
+    data = (temp[0],)
     cur.execute("SELECT name FROM tools where barcode = %s", temp[1])
     two = [r[0] for r in cur.fetchall()]
     cur.execute("SELECT name FROM tools where barcode = %s", temp[2])
