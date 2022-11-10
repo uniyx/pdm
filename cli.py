@@ -5,6 +5,7 @@ Author: Gian Esteves
 
 from tools import *
 import hashlib
+from collections import Counter
 
 
 def main():
@@ -164,6 +165,7 @@ def print_mainmenu():
     print("8. Manage requests")
     print("9. Sign out")
     print("10. Recommendations")
+    print("11. Show your most borrowed and lent tools")
     print("0. Exit")
 
     val = input("Select: ")
@@ -187,6 +189,9 @@ def print_mainmenu():
             print_login()
         case 10:
             recommend()
+            print_mainmenu()
+        case 11:
+            mostBandL()
             print_mainmenu()
         case 0:
             exit()
@@ -918,6 +923,35 @@ def recommend():
     print("Name: %s\t Barcode: %d" % (one[0], temp[0]))
     print("Name: %s\t Barcode: %d" % (two[0], temp[1]))
     print("Name: %s\t Barcode: %d" % (three[0], temp[2]))
+    cur.close()
+
+
+def mostBandL():
+    cur = con.cursor()
+    cur.execute("SELECT barcode FROM requests WHERE requester  = %s ORDER BY barcode DESC", (curruser,))
+    barcodes = [r[0] for r in cur.fetchall()]
+    barcode = Counter(barcodes)
+    print("In order, your 10 most commonly borrowed tools are: ")
+    p = 0
+    length = len(barcode.most_common())
+    while p < 10 and p < length:
+        code = barcode.most_common(10)[p][0]
+        cur.execute("SELECT name FROM tools WHERE barcode = %s", (code,))
+        name = [r[0] for r in cur.fetchall()]
+        print("%s (%s)" %(name[0], code))
+        p += 1
+    cur.execute("SELECT barcode FROM requests WHERE requestee  = %s ORDER BY barcode DESC", (curruser,))
+    barcodes = [r[0] for r in cur.fetchall()]
+    barcode = Counter(barcodes)
+    print("In order, your 10 most commonly lent tools are: ")
+    p = 0
+    length = len(barcode.most_common())
+    while p < 10 and p < length:
+        code = barcode.most_common(10)[p][0]
+        cur.execute("SELECT name FROM tools WHERE barcode = %s", (code,))
+        name = [r[0] for r in cur.fetchall()]
+        print("%s (%s)" % (name[0], code))
+        p += 1
     cur.close()
 
 
