@@ -931,7 +931,7 @@ def mostBandL():
     cur.execute("SELECT barcode FROM requests WHERE requester  = %s ORDER BY barcode DESC", (curruser,))
     barcodes = [r[0] for r in cur.fetchall()]
     barcode = Counter(barcodes)
-    print("In order, your 10 most commonly borrowed tool barcodes are: ")
+    print("In order, your 10 most commonly borrowed tools are: ")
     p = 0
     length = len(barcode.most_common())
     while p < 10 and p < length:
@@ -939,6 +939,18 @@ def mostBandL():
         cur.execute("SELECT name FROM tools WHERE barcode = %s", (code,))
         name = [r[0] for r in cur.fetchall()]
         print("%s (%s)" %(name[0], code))
+        p += 1
+    cur.execute("SELECT barcode FROM requests WHERE requestee  = %s ORDER BY barcode DESC", (curruser,))
+    barcodes = [r[0] for r in cur.fetchall()]
+    barcode = Counter(barcodes)
+    print("In order, your 10 most commonly lent tools are: ")
+    p = 0
+    length = len(barcode.most_common())
+    while p < 10 and p < length:
+        code = barcode.most_common(10)[p][0]
+        cur.execute("SELECT name FROM tools WHERE barcode = %s", (code,))
+        name = [r[0] for r in cur.fetchall()]
+        print("%s (%s)" % (name[0], code))
         p += 1
     cur.close()
 
