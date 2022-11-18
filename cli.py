@@ -306,7 +306,7 @@ def print_tools():
     cur = con.cursor()
 
     # Select all user's tool ids from catalogue_tools table
-    SQL = "SELECT toolid FROM catalogue_tools WHERE clogid = %s"
+    SQL = "SELECT toolid FROM catalogue_tools WHERE clogid = %s ORDER BY toolid ASC"
     data = (curruser,)
     cur.execute(SQL, data)
 
